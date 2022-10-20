@@ -38,7 +38,7 @@ class Attack(Action):
     Represents a melee or ranged attack
     """
 
-    def __init__(self, hit_bonus, damage_bonus, num_damage_dice, damage_dice, range, self_advantage_turns, self_disadvantage_turns, enemy_disadvantage_turns, enemy_advantage_turns, name="",  *args, **kwargs):
+    def __init__(self, hit_bonus, damage_bonus, num_damage_dice, damage_dice, range, self_advantage_turns = 0, self_disadvantage_turns = 0, enemy_disadvantage_turns = 0, enemy_advantage_turns = 0, name="",  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.hit_bonus = hit_bonus
         self.damage_bonus = damage_bonus
@@ -48,7 +48,7 @@ class Attack(Action):
         self.name = name
         self.self_advantage_turns = self_advantage_turns
         self.self_disadvantage_turns = self_disadvantage_turns
-        self.enemy_advantage_turns = enemy_disadvantage_turns
+        self.enemy_advantage_turns = enemy_advantage_turns
         self.enemy_disadvantage_turns = enemy_disadvantage_turns
 
     def use(self, source_creature, target_creature, **kwargs):
@@ -218,4 +218,4 @@ cataclysm = Attack(hit_bonus=200, damage_bonus=20,
 
 
 barbarian_axe_slash = Attack(hit_bonus=6, damage_bonus=3, num_damage_dice=1, damage_dice=12,
-                             range=5, self_advantage_turns=1, self_disadvantage_turns=0, enemy_advantage_turns=1, enemy_disadvantage_turns=0, name="Greataxe slash")
+                             range=50, self_advantage_turns=1, self_disadvantage_turns=0, enemy_advantage_turns=1, enemy_disadvantage_turns=0, name="Greataxe slash")
