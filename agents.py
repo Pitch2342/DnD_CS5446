@@ -474,8 +474,12 @@ class SARSA(FunctionApproximation):
         )
 
     def update_step(self, action, creature, current_state, next_state, combat_handler):
-        current_state = torch.from_numpy(current_state).float()
-        next_state = torch.from_numpy(next_state).float() if next_state is not None else None
+        # print("CR : ",current_state)
+        # current_state = torch.from_numpy(current_state).float()
+        current_state = current_state.float()
+        # next_state = torch.from_numpy(next_state).float() if next_state is not None else None
+        next_state = next_state.float() if next_state is not None else None
+        if action is None: print( action, creature, current_state, next_state)
         action_index = torch.tensor([[self.action_to_index[action]]])
 
         # Obtain reward
@@ -483,6 +487,7 @@ class SARSA(FunctionApproximation):
 
         # Obtain next action
         next_action_index = None
+        # print("NEXT STATE ",next_state)
         if next_state is not None:
             next_action = self.sample_action(
                 creature=creature,
@@ -490,7 +495,14 @@ class SARSA(FunctionApproximation):
                 increment_counter=False,
                 state=next_state
             )
-            next_action_index = creature.strategy.action_to_index[next_action]
+            # print("NEXT ACTION 1",next_action)
+            next_action = tuple(xi for xi in next_action if xi is not None)
+            if len(next_action)==0: print("ERROR")
+            # print("NEXT ACTION 2",next_action)
+            # print("NEXT ACTION 0",next_action[0])
+            # print("NEXT ACTION 00",next_action[0][0])
+            # print("ACTION TO INDEX : ",creature.strategy.action_to_index)
+            next_action_index = creature.strategy.action_to_index[next_action[0]]
             next_action_index = torch.tensor([[next_action_index]])
 
         # Add to experience replay
