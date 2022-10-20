@@ -46,6 +46,10 @@ class Creature:
         self.bonus_actions_used = 0
         self.symbol = symbol
         self.action_count = 0
+        self.advantage_counter = 0
+        self.disadvantage_counter = 0
+
+
 
     def use_action(self, action, **kwargs):
         """
