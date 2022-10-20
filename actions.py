@@ -38,7 +38,7 @@ class Attack(Action):
     Represents a melee or ranged attack
     """
 
-    def __init__(self, hit_bonus, damage_bonus, num_damage_dice, damage_dice, range, self_advantage_turns = 0, self_disadvantage_turns = 0, enemy_disadvantage_turns = 0, enemy_advantage_turns = 0, name="",  *args, **kwargs):
+    def __init__(self, hit_bonus, damage_bonus, num_damage_dice, damage_dice, range, self_advantage_turns=0, self_disadvantage_turns=0, enemy_disadvantage_turns=0, enemy_advantage_turns=0, name="",  *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.hit_bonus = hit_bonus
         self.damage_bonus = damage_bonus
@@ -79,8 +79,7 @@ class Attack(Action):
 
         if hit_roll >= target_creature.armor_class:
             # damage = self.damage_dice * self.num_damage_dice / 2
-            damage = np.sum([roll_dice(self.damage_dice)
-                            for _ in range(self.num_damage_dice)])
+            damage = self.calculate_damage(target_creature)
             target_creature.hit_points -= damage
             meta_data.update({"damage": damage})
             # adding adv, disadv for action
@@ -121,6 +120,17 @@ class Attack(Action):
             self.enemy_advantage_turns
         target_creature.disadvantage_counter = target_creature.disadvantage_counter + \
             self.enemy_disadvantage_turns
+
+    def calculate_damage(self, target_creature):
+
+        damage = np.sum([roll_dice(self.damage_dice)
+                         for _ in range(self.num_damage_dice)])
+
+        # check if resistances
+        if target_creature.resistance == 1:
+            damage = damage/2
+
+        return damage
 
 
 class Move(Action):
@@ -217,5 +227,6 @@ cataclysm = Attack(hit_bonus=200, damage_bonus=20,
                    num_damage_dice=1, damage_dice=12, range=60, name="Cataclysm")
 
 
-barbarian_axe_slash = Attack(hit_bonus=6, damage_bonus=3, num_damage_dice=1, damage_dice=12,
-                             range=50, self_advantage_turns=1, self_disadvantage_turns=0, enemy_advantage_turns=1, enemy_disadvantage_turns=0, name="Greataxe slash")
+# Barbarian is always raging +2 to dmg
+barbarian_axe_slash = Attack(hit_bonus=6, damage_bonus=5, num_damage_dice=1, damage_dice=12,
+                             range=5, self_advantage_turns=1, self_disadvantage_turns=0, enemy_advantage_turns=1, enemy_disadvantage_turns=0, name="Greataxe slash")

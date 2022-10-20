@@ -12,6 +12,7 @@ from actions import MoveLeft
 from actions import MoveRight
 from actions import MoveUp
 from actions import MoveDown
+from actions import barbarian_axe_slash
 from players import dungeon_master
 from players import hayden
 from utils.dnd_utils import roll_dice
@@ -48,6 +49,7 @@ class Creature:
         self.action_count = 0
         self.advantage_counter = 0
         self.disadvantage_counter = 0
+        self.resistance = 0
 
 
 
@@ -140,6 +142,43 @@ leotris = Creature(
     name="Leotris",
     hit_points=25,
     armor_class=16,
+    resistance = 1,
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
+    location=np.array([5, 10]),
+    symbol="x",
+    strategy=PPO()
+)
+
+barbarian = Creature(
+    player=hayden,
+    name="Barb",
+    hit_points=30,
+    armor_class=16,
+    resistance = 1,
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), barbarian_axe_slash],
+    location=np.array([5, 10]),
+    symbol="x",
+    strategy=PPO()
+)
+
+wizard = Creature(
+    player=hayden,
+    name="Leotris",
+    hit_points=25,
+    armor_class=16,
+    resistance = 1,
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
+    location=np.array([5, 10]),
+    symbol="x",
+    strategy=PPO()
+)
+
+ranger = Creature(
+    player=hayden,
+    name="Leotris",
+    hit_points=25,
+    armor_class=16,
+    resistance = 1,
     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
     location=np.array([5, 10]),
     symbol="x",
