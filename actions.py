@@ -205,6 +205,12 @@ class EndTurn(Action):
         meta_attributes = None
         return END_TURN_SIGNAL, meta_attributes
 
+class DoNotMove(Move):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.coord_index = 0
+        self.sign = 0
+        self.name = "do_not_move"
 
 # Todo: Move into DB
 vampire_bite = Attack(hit_bonus=10, damage_bonus=10, num_damage_dice=3,
