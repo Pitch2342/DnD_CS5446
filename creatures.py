@@ -12,6 +12,7 @@ from actions import MoveLeft
 from actions import MoveRight
 from actions import MoveUp
 from actions import MoveDown
+from actions import DoNotMove
 from players import dungeon_master
 from players import hayden
 from utils.dnd_utils import roll_dice
@@ -105,6 +106,24 @@ class Creature:
         creatures = [creature for creature in creatures if creature.name != self.name]
         random_enemy = np.random.choice(creatures)
         return random_enemy
+    
+    def attack_of_opportunity(self, initial_location, enemy_location):
+        x_before = initial_location[0]
+        y_before = initial_location[1]
+        x_enemy = enemy_location[0]
+        y_enemy = enemy_location[1]
+        x_after = self.location[0]
+        y_after = self.location[1]
+        
+        withinRangeBefore = ((x_before - x_enemy)**2 + (y_before - y_enemy)**2)**0.5 < 8
+        withinRangeAfter = ((x_after - x_enemy)**2 + (y_after - y_enemy)**2)**0.5 < 8
+        
+        if withinRangeBefore == True and withinRangeAfter == False:
+            print("AOO")
+            if self.name == "Strahd":
+                self.hit_points -= 3
+            else:
+                self.hit_points -= 1
 
     def full_heal(self):
         self.hit_points = self.max_hit_points
@@ -129,7 +148,7 @@ vampire = Creature(
     name="Strahd",
     hit_points=200,
     armor_class=17,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), vampire_bite],
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), vampire_bite],
     location=np.array([5, 5]),
     symbol="@",
     strategy=RandomStrategy()
@@ -140,7 +159,7 @@ leotris = Creature(
     name="Leotris",
     hit_points=25,
     armor_class=16,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), arrow_shot],
     location=np.array([5, 10]),
     symbol="x",
     strategy=PPO()
