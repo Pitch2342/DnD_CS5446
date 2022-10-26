@@ -119,7 +119,7 @@ class Creature:
         withinRangeAfter = ((x_after - x_enemy)**2 + (y_after - y_enemy)**2)**0.5 < 8
         
         if withinRangeBefore == True and withinRangeAfter == False:
-            print("AOO")
+            # print("AOO")
             if self.name == "Strahd":
                 self.hit_points -= 3
             else:
