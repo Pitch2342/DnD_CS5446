@@ -1,3 +1,4 @@
+import imp
 from agents import DoubleDQN
 from agents import DoubleDuelingDQN
 from agents import MCDoubleDuelingDQN
@@ -12,10 +13,14 @@ from actions import MoveLeft
 from actions import MoveRight
 from actions import MoveUp
 from actions import MoveDown
-from actions import barbarian_axe_slash
+from actions import bite, tail_spike
+from actions import barbarian_axe_slash, barbarian_axe_slash_reckless
+from actions import fire_bolt_cantrip, ray_of_frost_cantrip, chromatic_orb_level_1, magic_missile_level_1, scorching_ray_level_2, aganazzars_scorcher_level_2
+from actions import shortsword_slash, handcrossbow_shot
 from players import dungeon_master
 from players import hayden
 from utils.dnd_utils import roll_dice
+
 
 import numpy as np
 
@@ -27,7 +32,7 @@ class Creature:
     def __init__(
             self, player, name, hit_points, armor_class, location, strategy,
             speed=30, actions=[], reactions=[], attacks_allowed=1,
-            spells_allowed=1, symbol="x"):
+            spells_allowed=1, symbol="x", resistance = 0, level_1_spell_slots = 0, level_2_spell_slots = 0):
         self.player = player
         self.name = name
         self.hit_points = hit_points
@@ -49,8 +54,9 @@ class Creature:
         self.action_count = 0
         self.advantage_counter = 0
         self.disadvantage_counter = 0
-        self.resistance = 0
-
+        self.resistance = resistance
+        self.level_1_spell_slots_counter = level_1_spell_slots
+        self.level_2_spell_slots_counter = level_2_spell_slots
 
 
     def use_action(self, action, **kwargs):
@@ -126,36 +132,48 @@ class Creature:
 
 
 # Todo: Move into DB
-vampire = Creature(
+# vampire = Creature(
+#     player=dungeon_master,
+#     name="Strahd",
+#     hit_points=200,
+#     armor_class=17,
+#     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), vampire_bite],
+#     location=np.array([5, 5]),
+#     symbol="@",
+#     strategy=RandomStrategy()
+# )
+
+manticore = Creature(
     player=dungeon_master,
     name="Strahd",
-    hit_points=200,
-    armor_class=17,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), vampire_bite],
+    hit_points=80,
+    armor_class=14,
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), bite, tail_spike],
+    level_1_spell_slots = 3,
     location=np.array([5, 5]),
     symbol="@",
     strategy=RandomStrategy()
 )
 
-leotris = Creature(
-    player=hayden,
-    name="Leotris",
-    hit_points=25,
-    armor_class=16,
-    resistance = 1,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
-    location=np.array([5, 10]),
-    symbol="x",
-    strategy=PPO()
-)
+# leotris = Creature(
+#     player=hayden,
+#     name="Leotris",
+#     hit_points=25,
+#     armor_class=16,
+#     resistance = 0,
+#     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
+#     location=np.array([5, 10]),
+#     symbol="x",
+#     strategy=PPO()
+# )
 
 barbarian = Creature(
     player=hayden,
-    name="Barb",
-    hit_points=30,
-    armor_class=16,
+    name="Leotris",
+    hit_points=32,
+    armor_class=14,
     resistance = 1,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), barbarian_axe_slash],
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), barbarian_axe_slash, barbarian_axe_slash_reckless],
     location=np.array([5, 10]),
     symbol="x",
     strategy=PPO()
@@ -164,11 +182,13 @@ barbarian = Creature(
 wizard = Creature(
     player=hayden,
     name="Leotris",
-    hit_points=25,
-    armor_class=16,
-    resistance = 1,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
+    hit_points=16,
+    armor_class=11,
+    resistance = 0,
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), fire_bolt_cantrip, ray_of_frost_cantrip, chromatic_orb_level_1, magic_missile_level_1, scorching_ray_level_2, aganazzars_scorcher_level_2],
     location=np.array([5, 10]),
+    level_1_spell_slots = 3,
+    level_2_spell_slots = 1,
     symbol="x",
     strategy=PPO()
 )
@@ -176,10 +196,10 @@ wizard = Creature(
 ranger = Creature(
     player=hayden,
     name="Leotris",
-    hit_points=25,
-    armor_class=16,
-    resistance = 1,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
+    hit_points=28,
+    armor_class=14,
+    resistance = 0,
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), shortsword_slash, handcrossbow_shot],
     location=np.array([5, 10]),
     symbol="x",
     strategy=PPO()
