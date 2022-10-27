@@ -181,14 +181,19 @@ class CombatHandler:
         current_state = creature.strategy.get_current_state(creature=creature, combat_handler=self)
         action, log_prob, value = creature.strategy.sample_action(creature=creature, combat_handler=self)
         enemy = creature.sample_enemy(combat_handler=self)
+        enemy_location = enemy.location
+        
 
         # Keep track of current_state:
         self.last_known_current_states[creature] = current_state
+        initial_location = creature.location
 
         # Use the action:
         creature.use_action(action=action, target_creature=enemy, combat_handler=self)
+        creature.attack_of_opportunity(initial_location, enemy_location)
 
         next_state = creature.strategy.get_current_state(creature=creature, combat_handler=self)
+        
         reward = creature.strategy.determine_reward(
             creature=creature,
             current_state=current_state,
@@ -243,13 +248,14 @@ class CombatHandler:
         for creature, sars_list in sars_dict.items():
             if sars_list != [None]:
                 for current_state, action, reward, next_state, log_prob, value in sars_list:
-                    creature.strategy.update_step(
-                        action=action,
-                        creature=creature,
-                        current_state=current_state,
-                        next_state=next_state,
-                        combat_handler=self
-                    )
+                    if action is not None:
+                        creature.strategy.update_step(
+                            action=action,
+                            creature=creature,
+                            current_state=current_state,
+                            next_state=next_state,
+                            combat_handler=self
+                        )
 
     def obtain_info_for_printing(self, creature, total_reward, sars_list=None):
         leotris = self.get_combatant("Leotris")
@@ -274,12 +280,13 @@ class CombatHandler:
          - prompting each creature to learn from the results of the most recent round
          - prompting each creature to learn from the results of the entire trajectory
         """
+        # print("BEGIN RUN")
         self.initialize_combat()
         combat_is_over = False
         round_number = 0
         trajectory_dict = defaultdict(list)
         total_reward = 0
-
+        # print("BEGIN COMBAT START")
         while not combat_is_over:
             # Run one round of combat (one turn per creature)
             sars_dict, combat_is_over = self.execute_round(round_number)
@@ -290,7 +297,7 @@ class CombatHandler:
                     sars_list=sars_list
                 )
                 trajectory_dict[creature] += sars_list
-
+            # print("SD : ",sars_dict)
             # Let creatures update their strategies
             self.update_strategies(sars_dict)
 

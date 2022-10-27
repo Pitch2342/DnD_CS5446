@@ -17,6 +17,8 @@ from actions import bite, tail_spike
 from actions import barbarian_axe_slash, barbarian_axe_slash_reckless
 from actions import fire_bolt_cantrip, ray_of_frost_cantrip, chromatic_orb_level_1, magic_missile_level_1, scorching_ray_level_2, aganazzars_scorcher_level_2
 from actions import shortsword_slash, handcrossbow_shot
+from actions import DoNotMove
+
 from players import dungeon_master
 from players import hayden
 from utils.dnd_utils import roll_dice
@@ -113,6 +115,24 @@ class Creature:
         creatures = [creature for creature in creatures if creature.name != self.name]
         random_enemy = np.random.choice(creatures)
         return random_enemy
+    
+    def attack_of_opportunity(self, initial_location, enemy_location):
+        x_before = initial_location[0]
+        y_before = initial_location[1]
+        x_enemy = enemy_location[0]
+        y_enemy = enemy_location[1]
+        x_after = self.location[0]
+        y_after = self.location[1]
+        
+        withinRangeBefore = ((x_before - x_enemy)**2 + (y_before - y_enemy)**2)**0.5 < 8
+        withinRangeAfter = ((x_after - x_enemy)**2 + (y_after - y_enemy)**2)**0.5 < 8
+        
+        if withinRangeBefore == True and withinRangeAfter == False:
+            # print("AOO")
+            if self.name == "Strahd":
+                self.hit_points -= 3
+            else:
+                self.hit_points -= 1
 
     def full_heal(self):
         self.hit_points = self.max_hit_points
@@ -137,7 +157,7 @@ class Creature:
 #     name="Strahd",
 #     hit_points=200,
 #     armor_class=17,
-#     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), vampire_bite],
+#     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), vampire_bite],
 #     location=np.array([5, 5]),
 #     symbol="@",
 #     strategy=RandomStrategy()
@@ -148,7 +168,7 @@ manticore = Creature(
     name="Strahd",
     hit_points=80,
     armor_class=14,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), bite, tail_spike],
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), bite, tail_spike],
     level_1_spell_slots = 3,
     location=np.array([5, 5]),
     symbol="@",
@@ -161,7 +181,7 @@ manticore = Creature(
 #     hit_points=25,
 #     armor_class=16,
 #     resistance = 0,
-#     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), arrow_shot],
+#     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), arrow_shot],
 #     location=np.array([5, 10]),
 #     symbol="x",
 #     strategy=PPO()
@@ -173,7 +193,7 @@ barbarian = Creature(
     hit_points=32,
     armor_class=14,
     resistance = 1,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), barbarian_axe_slash, barbarian_axe_slash_reckless],
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), barbarian_axe_slash, barbarian_axe_slash_reckless],
     location=np.array([5, 10]),
     symbol="x",
     strategy=PPO()
@@ -185,7 +205,7 @@ wizard = Creature(
     hit_points=16,
     armor_class=11,
     resistance = 0,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), fire_bolt_cantrip, ray_of_frost_cantrip, chromatic_orb_level_1, magic_missile_level_1, scorching_ray_level_2, aganazzars_scorcher_level_2],
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), fire_bolt_cantrip, ray_of_frost_cantrip, chromatic_orb_level_1, magic_missile_level_1, scorching_ray_level_2, aganazzars_scorcher_level_2],
     location=np.array([5, 10]),
     level_1_spell_slots = 3,
     level_2_spell_slots = 1,
@@ -199,7 +219,7 @@ ranger = Creature(
     hit_points=28,
     armor_class=14,
     resistance = 0,
-    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), shortsword_slash, handcrossbow_shot],
+    actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), shortsword_slash, handcrossbow_shot],
     location=np.array([5, 10]),
     symbol="x",
     strategy=PPO()
