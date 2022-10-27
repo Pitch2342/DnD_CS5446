@@ -38,7 +38,7 @@ class Attack(Action):
     Represents a melee or ranged attack
     """
 
-    def __init__(self, hit_bonus, damage_bonus, num_damage_dice, damage_dice, range, self_advantage_turns = 0, self_disadvantage_turns = 0, enemy_disadvantage_turns = 0, enemy_advantage_turns = 0, name="",  *args, **kwargs):
+    def __init__(self, hit_bonus, damage_bonus, num_damage_dice, damage_dice, range, self_advantage_turns=0, self_disadvantage_turns=0, enemy_disadvantage_turns=0, enemy_advantage_turns=0, name="", attack_type='attack', spell_level = 0, auto_hit = False, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.hit_bonus = hit_bonus
         self.damage_bonus = damage_bonus
@@ -50,6 +50,9 @@ class Attack(Action):
         self.self_disadvantage_turns = self_disadvantage_turns
         self.enemy_advantage_turns = enemy_advantage_turns
         self.enemy_disadvantage_turns = enemy_disadvantage_turns
+        self.attack_type = attack_type
+        self.auto_hit = auto_hit
+        self.spell_level = spell_level
 
     def use(self, source_creature, target_creature, **kwargs):
         """
@@ -66,6 +69,13 @@ class Attack(Action):
         elif not is_under_attacks_allowed:
             return INVALID_ATTACK_SIGNAL, meta_data
 
+        
+        if self.attack_type == "spell":
+            result = self.spell_slot_check(source_creature)
+
+            if result == "INVALID":
+                return INVALID_ATTACK_SIGNAL, meta_data
+
         # Legal attack:
         hit_roll = self.roll_dice_to_hit(source_creature)
         source_creature.attacks_used += 1
@@ -77,10 +87,9 @@ class Attack(Action):
             "damage": 0,
         }
 
-        if hit_roll >= target_creature.armor_class:
+        if hit_roll >= target_creature.armor_class or self.auto_hit:
             # damage = self.damage_dice * self.num_damage_dice / 2
-            damage = np.sum([roll_dice(self.damage_dice)
-                            for _ in range(self.num_damage_dice)])
+            damage = self.calculate_damage(target_creature)
             target_creature.hit_points -= damage
             meta_data.update({"damage": damage})
             # adding adv, disadv for action
@@ -122,6 +131,32 @@ class Attack(Action):
         target_creature.disadvantage_counter = target_creature.disadvantage_counter + \
             self.enemy_disadvantage_turns
 
+    def calculate_damage(self, target_creature):
+
+        damage = np.sum([roll_dice(self.damage_dice)
+                         for _ in range(self.num_damage_dice)])
+
+        # check if resistances
+        if target_creature.resistance == 1:
+            damage = damage/2
+
+        return damage
+
+    def spell_slot_check(self, source_creature):
+        
+        if self.spell_level == 1 and source_creature.level_1_spell_slots_counter > 0:
+            source_creature.level_1_spell_slots_counter = source_creature.level_1_spell_slots_counter - 1
+            return "VALID"
+
+        elif self.spell_level == 2 and source_creature.level_2_spell_slots_counter > 0:
+            source_creature.level_2_spell_slots_counter = source_creature.level_2_spell_slots_counter - 1
+            return "VALID"
+
+        elif self.spell_level == 0:
+            return "VALID"
+
+        else:
+            return "INVALID"
 
 class Move(Action):
     def __init__(self, *args, **kwargs):
@@ -213,7 +248,7 @@ class DoNotMove(Move):
         self.name = "do_not_move"
 
 # Todo: Move into DB
-vampire_bite = Attack(hit_bonus=10, damage_bonus=10, num_damage_dice=3,
+vampire_bite = Attack(hit_bonus=10, damage_bonus=10, num_damage_dice=2,
                       damage_dice=12, range=5, name="Vampire Bite")
 sword_slash = Attack(hit_bonus=5, damage_bonus=3, num_damage_dice=1,
                      damage_dice=12, range=5, name="Sword Slash")
@@ -223,5 +258,51 @@ cataclysm = Attack(hit_bonus=200, damage_bonus=20,
                    num_damage_dice=1, damage_dice=12, range=60, name="Cataclysm")
 
 
-barbarian_axe_slash = Attack(hit_bonus=6, damage_bonus=3, num_damage_dice=1, damage_dice=12,
-                             range=50, self_advantage_turns=1, self_disadvantage_turns=0, enemy_advantage_turns=1, enemy_disadvantage_turns=0, name="Greataxe slash")
+# Barbarian is always raging +2 to dmg
+barbarian_axe_slash_reckless = Attack(hit_bonus=6, damage_bonus=5, num_damage_dice=1, damage_dice=12,
+                             range=5, self_advantage_turns=1, self_disadvantage_turns=0, enemy_advantage_turns=1, enemy_disadvantage_turns=0, name="Greataxe slash reckless")
+
+barbarian_axe_slash = Attack(hit_bonus=6, damage_bonus=5, num_damage_dice=1, damage_dice=12,
+                             range=5, self_advantage_turns=0, self_disadvantage_turns=0, enemy_advantage_turns=0, enemy_disadvantage_turns=0, name="Greataxe slash")
+
+
+#Wizard - School of evocation
+#cantrips
+fire_bolt_cantrip = Attack(hit_bonus=3, damage_bonus=0, num_damage_dice=1, damage_dice=10,
+                             range=40, name="Fire Bolt", attack_type="spell", spell_level=0)
+
+ray_of_frost_cantrip = Attack(hit_bonus=3, damage_bonus=0, num_damage_dice=1, damage_dice=8,
+                             range=15, name="Ray of Frost", attack_type="spell", spell_level=0)
+
+#Level 1
+chromatic_orb_level_1 = Attack(hit_bonus=3, damage_bonus=0, num_damage_dice=3, damage_dice=8,
+                             range=30, name="Chromatic Orb", attack_type="spell", spell_level=1)
+
+magic_missile_level_1 = Attack(hit_bonus=3, damage_bonus=3, num_damage_dice=3, damage_dice=4,
+                             range=40, name="Magic Missile", attack_type="spell", spell_level=1, auto_hit=True)
+
+
+#Level 2
+scorching_ray_level_2 = Attack(hit_bonus=3, damage_bonus=0, num_damage_dice=6, damage_dice=6,
+                             range=40, name="Scorching Ray", attack_type="spell", spell_level=2)
+
+aganazzars_scorcher_level_2 = Attack(hit_bonus=3, damage_bonus=0, num_damage_dice=3, damage_dice=8,
+                             range=10, enemy_disadvantage_turns=1, name="Aganazzars Scorcher", attack_type="spell", spell_level=2)
+
+
+#Ranger - Hunter's mark always on (only 1 enemy) - avg of 1d6 i.e +3 bonus, Hunter path
+shortsword_slash = Attack(hit_bonus=5, damage_bonus=6, num_damage_dice=1, damage_dice=6,
+                             range=5, name="Shortsword slash")
+
+handcrossbow_shot = Attack(hit_bonus=5, damage_bonus=6, num_damage_dice=1, damage_dice=6,
+                             range=30, name="Hand Crossbow shot")
+
+#cure wounds - should ?
+
+
+#Manticore - underpowered
+bite = Attack(hit_bonus=5, damage_bonus=5, num_damage_dice=1, damage_dice=8,
+                             range=5, name="Bite")
+
+tail_spike = Attack(hit_bonus=5, damage_bonus=3, num_damage_dice=1, damage_dice=8,
+                             range=30, name="Tail Spike", attack_type="spell", spell_level=1)
