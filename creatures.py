@@ -166,10 +166,10 @@ class Creature:
 manticore = Creature(
     player=dungeon_master,
     name="Strahd",
-    hit_points=80,
-    armor_class=14,
+    hit_points=95,
+    armor_class=16,
     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), bite, tail_spike],
-    level_1_spell_slots = 3,
+    level_1_spell_slots = 10,
     location=np.array([5, 5]),
     symbol="@",
     strategy=RandomStrategy()
