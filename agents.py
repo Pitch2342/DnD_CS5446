@@ -702,15 +702,19 @@ class MCDoubleDuelingDQN(DoubleDuelingDQN):
                 emphasis_weights=None
             )
 
-
 class PPO(FunctionApproximation):
     def __init__(self, max_training_steps=1e5, epsilon_start=0.5, epsilon_end=0.05, alpha=1e-5,
-                 gamma=0.99, update_frequency=30000, memory_length=16834, batch_size=128):
+                 gamma=0.99, update_frequency=30000, memory_length=16834, batch_size=128, 
+                 win_reward=5,lose_reward=0,attack_dealt_reward=0,attack_recieved_reward=0):
         super().__init__(
             max_training_steps, epsilon_start, epsilon_end, alpha, gamma, update_frequency, memory_length, batch_size
         )
         self.name = "PPO"
         self.optimizer = None
+        self.win_reward             = win_reward
+        self.lose_reward            = lose_reward
+        self.attack_dealt_reward    = attack_dealt_reward
+        self.attack_recieved_reward = attack_recieved_reward
 
     def initialize_weights(self, creature, state):
         self.n_states = state.shape[1]
@@ -901,25 +905,30 @@ class PPO(FunctionApproximation):
 
         enemy = self.determine_enemy(creature, combat_handler)
 
+
+        # Winner
         if next_state is None:
             if not enemy.is_alive():
-                reward = 5
+                reward += self.win_reward
+            else:
+                reward += self.lose_reward 
 
-        # # Get raw state
-        # raw_next_state = self.get_raw_state(creature, enemy, combat_handler)
+        # Get raw state
+        raw_next_state = self.get_raw_state(creature, enemy, combat_handler)
 
-        # # Damage done
-        # damage_done = (current_state - raw_next_state)[0][1]
-        # reward += round(float(damage_done), 2) * 10
+        # Damage done
+        damage_done = (current_state - raw_next_state)[0][1]
+        # print("DMG DONE : ",damage_done)
+        if float(damage_done) > 0:
+            reward += self.attack_dealt_reward
 
-        # # Damage taken
-        # damage_taken = (raw_next_state - current_state)[0][0]
-        # reward += round(float(damage_taken), 2) * 10
+        # Damage taken
+        damage_taken = (raw_next_state - current_state)[0][0]
+        # print("DMG TAKEN : ",damage_taken)
+        if float(damage_taken) < 0:
+            reward += self.attack_recieved_reward
+
+        # print(reward)
+        # input("CONTINUE ?")
 
         return reward
-
-
-
-
-
-
