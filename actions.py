@@ -10,6 +10,9 @@ from utils.dnd_utils import calculate_distance
 
 import numpy as np
 
+import logging
+logger = logging.getLogger("ACTION_HANDLER")
+
 
 class Action:
     """
@@ -65,8 +68,10 @@ class Attack(Action):
             source_creature.location, target_creature.location)
         is_in_range = distance <= self.range
         if not is_in_range:
+            logger.info(("                                INVALID ATTACK - RANGE: ",str(meta_data)))
             return INVALID_ATTACK_SIGNAL, meta_data
         elif not is_under_attacks_allowed:
+            logger.info(("                                INVALID ATTACK - ATTACKS_ALLOWED: ",str(meta_data)))
             return INVALID_ATTACK_SIGNAL, meta_data
 
         
@@ -74,6 +79,7 @@ class Attack(Action):
             result = self.spell_slot_check(source_creature)
 
             if result == "INVALID":
+                logger.info(("                                INVALID ATTACK - SPELL SLOT: ",str(meta_data)))
                 return INVALID_ATTACK_SIGNAL, meta_data
 
         # Legal attack:
@@ -94,8 +100,10 @@ class Attack(Action):
             meta_data.update({"damage": damage})
             # adding adv, disadv for action
             self.apply_vantage(source_creature, target_creature)
+            logger.info(("                                VALID ATTACK: ",str(meta_data)))
             return SUCCESSFUL_ATTACK_SIGNAL, meta_data
         else:
+            logger.info(("                                MISSED ATTACK: ",str(meta_data)))
             return MISSED_ATTACK_SIGNAL, meta_data
 
     def roll_dice_to_hit(self, source_creature, **kwargs):
@@ -194,8 +202,10 @@ class Move(Action):
             source_creature.movement_remaining -= distance
             meta_data = {"old_location": old_location,
                          "new_location": source_creature.location}
+            logger.info(("                                VALID MOVE: ",str(meta_data)))
             return SUCCESSFUL_MOVE_SIGNAL, meta_data
         else:
+            logger.info(("                                INVALID MOVE: ",str(meta_data)))
             return UNSUCCESSFUL_MOVE_SIGNAL, meta_data
 
 

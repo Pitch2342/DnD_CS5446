@@ -2,6 +2,9 @@ from collections import Counter
 from collections import defaultdict
 import torch
 
+import logging
+logger = logging.getLogger("COMBAT_HANDLER")
+
 REWARD_INDEX = 2
 
 
@@ -216,8 +219,13 @@ class CombatHandler:
         is_first_round = round_number <= 0
         sars_dict = defaultdict(list)
         self.actions_this_round = Counter()
-
+        
+        logger.info(("        ROUND : ",str(round_number)))
+        
         for creature, rolled_initiative in self.turn_order:
+
+            logger.info(("                CREATURE PLAYING : ",str(creature.name)))
+
             # Add end_turn action to sars lists
             if not is_first_round:
                 sars_dict = self.add_end_turn_sars(creature=creature, sars_dict=sars_dict)
@@ -225,7 +233,7 @@ class CombatHandler:
             while True:
                 # Poll and perform action:
                 current_state, action, reward, next_state, log_prob, value = self.perform_round_step(creature)
-
+                logger.info(("                        ",str(action.name)," gave reward of ",str(reward)))
                 # If over, exit
                 if self.combat_is_over():
                     sars_dict = self.add_end_combat_sars(sars_dict=sars_dict)
@@ -280,13 +288,13 @@ class CombatHandler:
          - prompting each creature to learn from the results of the most recent round
          - prompting each creature to learn from the results of the entire trajectory
         """
-        # print("BEGIN RUN")
+
         self.initialize_combat()
         combat_is_over = False
         round_number = 0
         trajectory_dict = defaultdict(list)
         total_reward = 0
-        # print("BEGIN COMBAT START")
+        logger.info(("BEGIN COMBAT"))
         while not combat_is_over:
             # Run one round of combat (one turn per creature)
             sars_dict, combat_is_over = self.execute_round(round_number)
@@ -297,7 +305,7 @@ class CombatHandler:
                     sars_list=sars_list
                 )
                 trajectory_dict[creature] += sars_list
-            # print("SD : ",sars_dict)
+            # logger.info(("SD : ",sars_dict)
             # Let creatures update their strategies
             self.update_strategies(sars_dict)
 
@@ -312,5 +320,7 @@ class CombatHandler:
 
         # For reporting
         winner = self.determine_winner()
-
+        logger.info(("END COMBAT REWARD : ",str(total_reward)))
+        logger.info(("END COMBAT WINNER: ",str(winner)))
+        logger.info(("---------------------"))
         return winner, total_reward, last_state, num_actions_used
