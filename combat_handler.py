@@ -84,11 +84,13 @@ class CombatHandler:
 
         return is_over
 
-    def check_legal_movement(self, target_location):
+    def check_legal_movement(self, source_location, target_location):
         """
         Check for clashing into other creatures
         """
         is_legal = True
+        if source_location == target_location:
+            return is_legal
         for creature in self.combatants:
             if (target_location == creature.location).all():
                 is_legal = False

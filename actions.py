@@ -192,7 +192,7 @@ class Move(Action):
         is_legal_env_target_location = combat_handler.environment.check_if_legal(
             target_location=target_location)
         is_legal_collision_target_location = combat_handler.check_legal_movement(
-            target_location=target_location)
+            source_location=source_creature.location, target_location=target_location)
         is_legal_target_location = is_legal_env_target_location and is_legal_collision_target_location
 
         # Move if allowed
