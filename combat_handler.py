@@ -89,7 +89,7 @@ class CombatHandler:
         Check for clashing into other creatures
         """
         is_legal = True
-        if source_location == target_location:
+        if (source_location == target_location).all():
             return is_legal
         for creature in self.combatants:
             if (target_location == creature.location).all():
@@ -227,6 +227,7 @@ class CombatHandler:
         logger.info(("            START STATES FOR CREATURES: "))
         for creature, rolled_initiative in self.turn_order:
             logger.info(("            START STATES FOR : "+str(creature.name),creature.strategy.get_current_state(creature=creature, combat_handler=self)))
+            logger.info(("                HITPOINTS : "+str(creature.hit_points)+"/"+str(creature.max_hit_points)))
         logger.info(("        ROUND START "))
         for creature, rolled_initiative in self.turn_order:
 
@@ -256,6 +257,7 @@ class CombatHandler:
         logger.info(("            END STATES FOR CREATURES: "))
         for creature, rolled_initiative in self.turn_order:
             logger.info(("            END STATES FOR : "+str(creature.name),creature.strategy.get_current_state(creature=creature, combat_handler=self)))
+            logger.info(("                HITPOINTS : "+str(creature.hit_points)+"/"+str(creature.max_hit_points)))
         return sars_dict, self.combat_is_over()
 
     def update_strategies(self, sars_dict):
