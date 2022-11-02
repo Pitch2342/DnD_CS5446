@@ -57,6 +57,7 @@ class CombatHandler:
         for combatant in self.combatants:
             self.turn_order.append([combatant, combatant.roll_initiative()])
         self.turn_order = sorted(self.turn_order, key=lambda x: x[1], reverse=True)
+        logger.info(("TURN ORDER FOR GAME : ",[[x[0].name,x[1]] for x in self.turn_order]))
 
     def reset_combat_round_resources(self):
         for combatant in self.combatants:
@@ -220,11 +221,14 @@ class CombatHandler:
         sars_dict = defaultdict(list)
         self.actions_this_round = Counter()
         
-        logger.info(("        ROUND : ",str(round_number)))
-        
+        logger.info(("        ROUND : "+str(round_number)))
+        logger.info(("            START STATES FOR CREATURES: "))
+        for creature, rolled_initiative in self.turn_order:
+            logger.info(("            START STATES FOR : "+str(creature.name),creature.strategy.get_current_state(creature=creature, combat_handler=self)))
+        logger.info(("        ROUND START "))
         for creature, rolled_initiative in self.turn_order:
 
-            logger.info(("                CREATURE PLAYING : ",str(creature.name)))
+            logger.info(("                CREATURE PLAYING : "+str(creature.name)))
 
             # Add end_turn action to sars lists
             if not is_first_round:
@@ -233,10 +237,11 @@ class CombatHandler:
             while True:
                 # Poll and perform action:
                 current_state, action, reward, next_state, log_prob, value = self.perform_round_step(creature)
-                logger.info(("                        ",str(action.name)," gave reward of ",str(reward)))
+                logger.info(("                        "+str(action.name)+" gave reward of "+str(reward)))
                 # If over, exit
                 if self.combat_is_over():
                     sars_dict = self.add_end_combat_sars(sars_dict=sars_dict)
+                    logger.info(("            COMBAT OVER"))
                     return sars_dict, self.combat_is_over()
 
                 # If ended turn, go to next creature
@@ -246,7 +251,9 @@ class CombatHandler:
                 # Add results:
                 sars = (current_state, action, reward, next_state, log_prob, value)
                 sars_dict[creature].append(sars)
-
+        logger.info(("            END STATES FOR CREATURES: "))
+        for creature, rolled_initiative in self.turn_order:
+            logger.info(("            END STATES FOR : "+str(creature.name),creature.strategy.get_current_state(creature=creature, combat_handler=self)))
         return sars_dict, self.combat_is_over()
 
     def update_strategies(self, sars_dict):
@@ -320,7 +327,7 @@ class CombatHandler:
 
         # For reporting
         winner = self.determine_winner()
-        logger.info(("END COMBAT REWARD : ",str(total_reward)))
-        logger.info(("END COMBAT WINNER: ",str(winner)))
+        logger.info(("END COMBAT REWARD : "+str(total_reward)))
+        logger.info(("END COMBAT WINNER: "+str(winner)))
         logger.info(("---------------------"))
         return winner, total_reward, last_state, num_actions_used

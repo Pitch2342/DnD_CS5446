@@ -26,6 +26,8 @@ from utils.dnd_utils import roll_dice
 
 import numpy as np
 
+import logging
+logger = logging.getLogger("CREATURE_HANDLER")
 
 class Creature:
     """
@@ -128,7 +130,7 @@ class Creature:
         withinRangeAfter = ((x_after - x_enemy)**2 + (y_after - y_enemy)**2)**0.5 < 8
         
         if withinRangeBefore == True and withinRangeAfter == False:
-            # print("AOO")
+            logger.info(("                                ATTACK OF OPPURTUNITY RECIEVED"))
             if self.name == "Strahd":
                 self.hit_points -= 3
             else:
