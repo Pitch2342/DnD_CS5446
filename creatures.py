@@ -132,9 +132,9 @@ class Creature:
         if withinRangeBefore == True and withinRangeAfter == False:
             logger.info(("                                ATTACK OF OPPURTUNITY RECIEVED"))
             if self.name == "Strahd":
-                self.hit_points -= 3
-            else:
                 self.hit_points -= 1
+            else:
+                self.hit_points -= 3
 
     def full_heal(self):
         self.hit_points = self.max_hit_points
