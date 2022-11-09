@@ -209,8 +209,8 @@ wizard = Creature(
     resistance = 0,
     actions=[MoveLeft(), MoveRight(), MoveUp(), MoveDown(), DoNotMove(), fire_bolt_cantrip, ray_of_frost_cantrip, chromatic_orb_level_1, magic_missile_level_1, scorching_ray_level_2, aganazzars_scorcher_level_2],
     location=np.array([5, 10]),
-    level_1_spell_slots = 3,
-    level_2_spell_slots = 1,
+    level_1_spell_slots = 4,
+    level_2_spell_slots = 2,
     symbol="x",
     strategy=PPO()
 )
