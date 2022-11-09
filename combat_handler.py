@@ -335,3 +335,47 @@ class CombatHandler:
         logger.info(("END COMBAT WINNER: "+str(winner)))
         logger.info(("---------------------"))
         return winner, total_reward, last_state, num_actions_used
+
+    def run_no_train(self):
+        """
+        Runs combat by:
+         - prompting each creature for actions until the "EndTurn" action is selected
+         - prompting each creature to learn from the results of the most recent round
+         - prompting each creature to learn from the results of the entire trajectory
+        """
+
+        self.initialize_combat()
+        combat_is_over = False
+        round_number = 0
+        trajectory_dict = defaultdict(list)
+        total_reward = 0
+        logger.info(("BEGIN COMBAT"))
+        while not combat_is_over:
+            # Run one round of combat (one turn per creature)
+            sars_dict, combat_is_over = self.execute_round(round_number)
+            for creature, sars_list in sars_dict.items():
+                total_reward, last_state, num_actions_used = self.obtain_info_for_printing(
+                    creature=creature,
+                    total_reward=total_reward,
+                    sars_list=sars_list
+                )
+                trajectory_dict[creature] += sars_list
+            # logger.info(("SD : ",sars_dict)
+            # Let creatures update their strategies
+            # self.update_strategies(sars_dict)
+
+            # Resets round resources (actions/movement used etc)
+            self.end_of_round_cleanup()
+
+            round_number += 1
+
+        # Monte carlo updates:
+        # for creature in self.combatants:
+        #     creature.strategy.update_step_trajectory(trajectory_dict[creature])
+
+        # For reporting
+        winner = self.determine_winner()
+        logger.info(("END COMBAT REWARD : "+str(total_reward)))
+        logger.info(("END COMBAT WINNER: "+str(winner)))
+        logger.info(("---------------------"))
+        return winner, total_reward, last_state, num_actions_used
